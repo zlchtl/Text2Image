@@ -4,17 +4,25 @@ from dotenv import load_dotenv
 import json
 import requests
 import time
+import base64
+from PIL import Image
+from io import BytesIO
 
 
 class Text2ImageAPI:
-    def __init__(self, debug: bool = False):
+    def __init__(self, prompt: str = 'Кот в очках', width: int = 1024, height: int = 1024, style: str = '',
+                 neg_prompt: str = '', show=False, save=True, debug=False):
         self.DEBUG = debug
         self.init_loger()
         self.init_env()
         self.init_settings()
 
         self.get_models()  # получение списка моделей
-        self.availability_service(self.models[0])  # проверка доступности модели
+        self.availability_service(self.models[0])  # TODO сделать выбор моделей (проверка доступности модели)
+
+        uuid = self.generate(prompt, style, neg_prompt, model=self.models[0], width=width, height=height)
+        base64_string = self.check_generation(uuid)
+        self.base64_to_image(base64_string, show=show, save=save)
 
     def init_loger(self):
         self.logger = logging.getLogger(__name__)
@@ -56,6 +64,56 @@ class Text2ImageAPI:
         response = requests.get(self.URL + self.KEYS["availability"], headers=self.AUTH_HEADERS, files=param)
         data = response.json()
         self.logger.info(f'Статус модели <{model['name']} {model['version']}>: {data['status']}')
+        if data['status'] != 'ACTIVE':
+            self.logger.error('Модель не активна')
+
+    def generate(self, prompt: str, style: str, neg_prompt: str, model: dict, images=1, width=1024, height=1024):
+        params = {
+            "type": "GENERATE",
+            "numImages": images,
+            "width": width,
+            "height": height,
+            "generateParams": {
+                "query": f"{prompt}",
+                "style": f'{style}',
+                "negativePromptUnclip": f'{neg_prompt}'
+            }
+        }
+
+        data = {
+            'model_id': (None, model['id']),
+            'params': (None, json.dumps(params), 'application/json')
+        }
+        response = requests.post(self.URL + self.KEYS['RUN'], headers=self.AUTH_HEADERS, files=data)
+        data = response.json()
+        self.logger.debug(data)
+        self.logger.info(f'Генерация запущена под id: {data['uuid']}')
+        return data['uuid']
+
+    def check_generation(self, request_id, attempts=9, delay=10):
+        while attempts > -1:
+            self.logger.debug(f'Проверка генерации <{request_id}> осталось попыток {attempts}')
+            response = requests.get(self.URL + self.KEYS['status'] + request_id, headers=self.AUTH_HEADERS)
+            data = response.json()
+            if data['status'] == 'DONE':
+                self.logger.info(f'Генерация <{request_id}> успешна\n'
+                                 f'Время выполнения: {data['generationTime']}\n'
+                                 f'Цензура: {data['censored']}')
+                return data['images'][0]
+            attempts -= 1
+            time.sleep(delay)
+
+    def base64_to_image(self, base64_string: str, show: bool = True, save: bool = True):
+        if "data:image" in base64_string:
+            base64_string = base64_string.split(",")[1]
+        image_bytes = base64.b64decode(base64_string)
+        image_stream = BytesIO(image_bytes)
+        img = Image.open(image_stream)
+        if show:
+            img.show()
+        if save:
+            img.save("image.jpg")
+        self.logger.info(f'Конвертация изображения прошла успешно')
 
 
 if __name__ == "__main__":
