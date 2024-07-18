@@ -1,0 +1,8 @@
+{
+  "URL": "https://api-key.fusionbrain.ai/",
+  "KEYS": {
+    "RUN": "key/api/v1/text2image/run",
+    "MODELS": "key/api/v1/models",
+    "availability": "/key/api/v1/text2image/availability"
+  }
+}
