@@ -1,16 +1,16 @@
 # Text2Image - генератор картинок в командной строке
 
 Скрипт для генерации изображений через API [fusionbrain.ai](https://fusionbrain.ai)  
-Для работы требуются личные **api_key** и **secret_key** в виртуальном окружении [Документация по ключам](https://fusionbrain.ai/docs/doc/poshagovaya-instrukciya-po-upravleniu-api-kluchami/)
+Для работы требуются личные **api_key** и **secret_key** в виртуальном окружении [Документация по ключам](https://fusionbrain.ai/docs/doc/poshagovaya-instrukciya-po-upravleniu-api-kluchami/)  
 Пример .env файла находится в examples  
-Логи скрипта находятся в log
+Логи скрипта находятся в log  
 ---
 
 Запуск скрипта из консоли:  
 ```Bash
 python .\main.py -p='Пушистый кот в очках' -st='реализм' -sh=1
-```
-## Флаги
+```  
+## Флаги  
 * **prompt** — (**-p**, **--prompt**) текст запроса *(type = str; default='Кот в очках';)*  
 * **width** — (**--width**) ширина *(type=int; default=1024);)*  
 * **height** — (**--height**) высота *(type=int; default=1024);)*  
