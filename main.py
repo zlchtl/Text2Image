@@ -7,11 +7,12 @@ import time
 import base64
 from PIL import Image
 from io import BytesIO
+import argparse
 
 
 class Text2ImageAPI:
-    def __init__(self, prompt: str = 'Кот в очках', width: int = 1024, height: int = 1024, style: str = '',
-                 neg_prompt: str = '', show=False, save=True, debug=False):
+    def __init__(self, prompt: str, width: int, height: int, style: str, neg_prompt: str,
+                 show: bool, save: bool, debug: bool):
         self.DEBUG = debug
         self.init_loger()
         self.init_env()
@@ -117,4 +118,14 @@ class Text2ImageAPI:
 
 
 if __name__ == "__main__":
-    generator = Text2ImageAPI(debug=True)
+    parser = argparse.ArgumentParser(description='Text2Image')
+    parser.add_argument('-p', '--prompt', type=str, default='Кот в очках')
+    parser.add_argument('--width', type=int, default=1024)
+    parser.add_argument('--height', type=int, default=1024)
+    parser.add_argument('-st', '--style', type=str, default='')
+    parser.add_argument('-np', '--ngprompt', type=str, default='')
+    parser.add_argument('-sh', '--show', type=bool, default=False)
+    parser.add_argument('-s', '--save', type=bool, default=True)
+    parser.add_argument('-db', '--debug', type=bool, default=False)
+    args = parser.parse_args()
+    Text2ImageAPI(args.prompt, args.width, args.height, args.style, args.ngprompt, args.show, args.save, args.debug)
