@@ -19,7 +19,8 @@ class Text2ImageAPI:
         self.init_settings()
 
         self.get_models()  # получение списка моделей
-        self.availability_service(self.models[0])  # TODO сделать выбор моделей (проверка доступности модели)
+        if not(self.availability_service(self.models[0])):  # TODO сделать выбор моделей (проверка доступности модели)
+            return
 
         uuid = self.generate(prompt, style, neg_prompt, model=self.models[0], width=width, height=height)
         base64_string = self.check_generation(uuid)
@@ -67,8 +68,11 @@ class Text2ImageAPI:
         self.logger.info(f'Статус модели <{model['name']} {model['version']}>: {data['status']}')
         if data['status'] != 'ACTIVE':
             self.logger.error('Модель не активна')
+            return False
+        else:
+            return True
 
-    def generate(self, prompt: str, style: str, neg_prompt: str, model: dict, images=1, width=1024, height=1024):
+    def generate(self, prompt: str, style: str, neg_prompt: str, model: dict, images=1, width=1024, height=1024): #TODO переписать под асинхронность
         params = {
             "type": "GENERATE",
             "numImages": images,
