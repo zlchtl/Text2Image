@@ -12,6 +12,7 @@ class Text2ImageAPI:
         self.init_env()
         self.init_settings()
 
+
     def init_loger(self):
         self.logger = logging.getLogger(__name__)
         if self.DEBUG:
@@ -22,6 +23,7 @@ class Text2ImageAPI:
             handler = logging.FileHandler(f"log/{__name__}.log", mode='w', encoding="UTF-8")
         handler.setFormatter(logging.Formatter("%(name)s %(asctime)s %(levelname)s %(message)s"))
         self.logger.addHandler(handler)
+        self.logger.addHandler(logging.StreamHandler())
         self.logger.debug(f"Инициализация логера")
 
     def init_env(self):
@@ -41,7 +43,10 @@ class Text2ImageAPI:
         }
         self.logger.debug(f"Инициализация настроек скрипта")
 
-
+    def availability_service(self):
+        response = requests.get(self.URL + self.KEYS["availability"], headers=self.AUTH_HEADERS)
+        data = response.json()
+        self.logger.debug(data)
 
 if __name__ == "__main__":
     generator = Text2ImageAPI(DEBUG=True)
